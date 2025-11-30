@@ -1,6 +1,6 @@
-## 0.0.3
+## 0.0.5
 - Resolved pub points issues (analysis clean, tightened docs/metadata).
-- ...
+
 ## 0.0.3
 - Added additional default `DeviceType`s: `mobileSmall`, `laptop`, `desktopLarge`.
 - Optimized breakpoint selection in `ResponsiveUtils`:

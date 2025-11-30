@@ -138,7 +138,7 @@ class ResponsiveUtils {
   /// Whether automatic scaling (via ScreenUtil) should be enabled for the
   /// current device type, as specified by the active [Breakpoints].
   static bool get isNeedScreenUtil {
-    if (_lastIndex < 0 || _lastIndex >= _orderedBreakpoints.length){
+    if (_lastIndex < 0 || _lastIndex >= _orderedBreakpoints.length) {
       return false;
     }
     return _orderedBreakpoints[_lastIndex].autoScale ? true : false;
