@@ -1,9 +1,19 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart' as screenUtil;
+import 'package:flutter_screenutil/flutter_screenutil.dart' as su
+    hide SizeExtension, EdgeInsetsExtension, BorderRadiusExtension,
+        RadiusExtension, BoxConstraintsExtension;
 
 import 'responsive_utils.dart';
+
+/// App-provided extensions that wrap `flutter_screenutil` so you can use
+/// ergonomic helpers like `.w`, `.h`, `.sp`, spacing widgets, and adapters
+/// for `EdgeInsets`, `BorderRadius`, `Radius`, and `BoxConstraints`.
+///
+/// We import `flutter_screenutil` as `su` and hide its own extension symbols
+/// to avoid name clashes with the extensions defined here. Scaling only applies
+/// when `ResponsiveUtils.isNeedScreenUtil` is true for the active breakpoint.
 
 /// Extension methods on `num` providing ScreenUtil-powered scaling and spacing
 /// helpers. These return scaled values only when
@@ -16,27 +26,27 @@ import 'responsive_utils.dart';
 extension SizeExtension on num {
   ///[ScreenUtil.setWidth]
   double get w => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setWidth(this)
+      ? su.ScreenUtil().setWidth(this)
       : toDouble();
 
   ///[ScreenUtil.setHeight]
   double get h => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setHeight(this)
+      ? su.ScreenUtil().setHeight(this)
       : toDouble();
 
   ///[ScreenUtil.radius]
   double get r => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().radius(this)
+      ? su.ScreenUtil().radius(this)
       : toDouble();
 
   ///[ScreenUtil.diagonal]
   double get dg => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().diagonal(this)
+      ? su.ScreenUtil().diagonal(this)
       : toDouble();
 
   ///[ScreenUtil.diameter]
   double get dm => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().diameter(this)
+      ? su.ScreenUtil().diameter(this)
       : toDouble();
 
   ///[ScreenUtil.setSp]
@@ -44,7 +54,7 @@ extension SizeExtension on num {
     final value = ResponsiveUtils.isNeedScreenUtil;
     print("isNeedScreenUtil: $value");
     if (value) {
-      return screenUtil.ScreenUtil().setSp(this);
+      return su.ScreenUtil().setSp(this);
     }
     return toDouble();
   }
@@ -64,57 +74,166 @@ extension SizeExtension on num {
   ///屏幕宽度的倍数
   ///Multiple of screen width
   double get sw => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().screenWidth * this
+      ? su.ScreenUtil().screenWidth * this
       : toDouble();
 
   ///屏幕高度的倍数
   ///Multiple of screen height
   double get sh => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().screenHeight * this
+      ? su.ScreenUtil().screenHeight * this
       : toDouble();
 
   ///[ScreenUtil.setHeight]
   SizedBox get verticalSpace => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setVerticalSpacing(this)
+      ? su.ScreenUtil().setVerticalSpacing(this)
       : SizedBox(height: toDouble());
 
   ///[ScreenUtil.setVerticalSpacingFromWidth]
   SizedBox get verticalSpaceFromWidth => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setVerticalSpacingFromWidth(this)
+      ? su.ScreenUtil().setVerticalSpacingFromWidth(this)
       : SizedBox(height: toDouble());
 
   ///[ScreenUtil.setWidth]
   SizedBox get horizontalSpace => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setHorizontalSpacing(this)
+      ? su.ScreenUtil().setHorizontalSpacing(this)
       : SizedBox(width: toDouble());
 
   ///[ScreenUtil.radius]
   SizedBox get horizontalSpaceRadius => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setHorizontalSpacingRadius(this)
+      ? su.ScreenUtil().setHorizontalSpacingRadius(this)
       : SizedBox(width: toDouble());
 
   ///[ScreenUtil.radius]
   SizedBox get verticalSpacingRadius => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setVerticalSpacingRadius(this)
+      ? su.ScreenUtil().setVerticalSpacingRadius(this)
       : SizedBox(height: toDouble());
 
   ///[ScreenUtil.diameter]
   SizedBox get horizontalSpaceDiameter => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setHorizontalSpacingDiameter(this)
+      ? su.ScreenUtil().setHorizontalSpacingDiameter(this)
       : SizedBox(width: toDouble());
 
   ///[ScreenUtil.diameter]
   SizedBox get verticalSpacingDiameter => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setVerticalSpacingDiameter(this)
+      ? su.ScreenUtil().setVerticalSpacingDiameter(this)
       : SizedBox(height: toDouble());
 
   ///[ScreenUtil.diagonal]
   SizedBox get horizontalSpaceDiagonal => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setHorizontalSpacingDiagonal(this)
+      ? su.ScreenUtil().setHorizontalSpacingDiagonal(this)
       : SizedBox(width: toDouble());
 
   ///[ScreenUtil.diagonal]
   SizedBox get verticalSpacingDiagonal => ResponsiveUtils.isNeedScreenUtil
-      ? screenUtil.ScreenUtil().setVerticalSpacingDiagonal(this)
+      ? su.ScreenUtil().setVerticalSpacingDiagonal(this)
       : SizedBox(height: toDouble());
+}
+
+
+
+extension EdgeInsetsExtension on EdgeInsets {
+  /// Creates adapt insets using r [SizeExtension].
+  EdgeInsets get r => copyWith(
+        top: top.r,
+        bottom: bottom.r,
+        right: right.r,
+        left: left.r,
+      );
+
+  EdgeInsets get dm => copyWith(
+        top: top.dm,
+        bottom: bottom.dm,
+        right: right.dm,
+        left: left.dm,
+      );
+
+  EdgeInsets get dg => copyWith(
+        top: top.dg,
+        bottom: bottom.dg,
+        right: right.dg,
+        left: left.dg,
+      );
+
+  EdgeInsets get w => copyWith(
+        top: top.w,
+        bottom: bottom.w,
+        right: right.w,
+        left: left.w,
+      );
+
+  EdgeInsets get h => copyWith(
+        top: top.h,
+        bottom: bottom.h,
+        right: right.h,
+        left: left.h,
+      );
+}
+
+extension BorderRadiusExtension on BorderRadius {
+  /// Creates adapt BorderRadius using r [SizeExtension].
+  BorderRadius get r => copyWith(
+        bottomLeft: bottomLeft.r,
+        bottomRight: bottomRight.r,
+        topLeft: topLeft.r,
+        topRight: topRight.r,
+      );
+
+  BorderRadius get w => copyWith(
+        bottomLeft: bottomLeft.w,
+        bottomRight: bottomRight.w,
+        topLeft: topLeft.w,
+        topRight: topRight.w,
+      );
+
+  BorderRadius get h => copyWith(
+        bottomLeft: bottomLeft.h,
+        bottomRight: bottomRight.h,
+        topLeft: topLeft.h,
+        topRight: topRight.h,
+      );
+}
+
+extension RadiusExtension on Radius {
+  /// Creates adapt Radius using r [SizeExtension].
+  Radius get r => Radius.elliptical(x.r, y.r);
+
+  Radius get dm => Radius.elliptical(x.dm, y.dm);
+
+  Radius get dg => Radius.elliptical(x.dg, y.dg);
+
+  Radius get w => Radius.elliptical(x.w, y.w);
+
+  Radius get h => Radius.elliptical(x.h, y.h);
+}
+
+extension BoxConstraintsExtension on BoxConstraints {
+  /// Creates adapt BoxConstraints using r [SizeExtension].
+  BoxConstraints get r => this.copyWith(
+        maxHeight: maxHeight.r,
+        maxWidth: maxWidth.r,
+        minHeight: minHeight.r,
+        minWidth: minWidth.r,
+      );
+
+  /// Creates adapt BoxConstraints using h-w [SizeExtension].
+  BoxConstraints get hw => this.copyWith(
+        maxHeight: maxHeight.h,
+        maxWidth: maxWidth.w,
+        minHeight: minHeight.h,
+        minWidth: minWidth.w,
+      );
+
+  BoxConstraints get w => this.copyWith(
+        maxHeight: maxHeight.w,
+        maxWidth: maxWidth.w,
+        minHeight: minHeight.w,
+        minWidth: minWidth.w,
+      );
+
+  BoxConstraints get h => this.copyWith(
+        maxHeight: maxHeight.h,
+        maxWidth: maxWidth.h,
+        minHeight: minHeight.h,
+        minWidth: minWidth.h,
+      );
 }

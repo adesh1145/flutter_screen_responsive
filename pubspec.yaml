@@ -1,6 +1,6 @@
 name: flutter_screen_responsive
 description: "Responsive layout toolkit for Flutter using configurable breakpoints and ScreenUtil."
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/adesh1145/flutter_screen_responsive
 repository: https://github.com/adesh1145/flutter_screen_responsive
 issue_tracker: https://github.com/adesh1145/flutter_screen_responsive/issues

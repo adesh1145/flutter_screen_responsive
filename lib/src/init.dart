@@ -7,9 +7,11 @@ import 'breakpoints.dart' as b;
 /// [`flutter_screenutil`](https://pub.dev/packages/flutter_screenutil).
 ///
 /// Place `ResponsiveInit` above your `MaterialApp`/`CupertinoApp`. It:
-/// - stores your `Breakpoints` by `DeviceType`
-/// - detects current device type by screen width
-/// - rebuilds `ScreenUtilInit` when device type changes so scale config stays in sync
+/// - registers your ordered `Breakpoints` with `ResponsiveUtils`
+/// - detects the active device type by current screen width
+/// - looks up the exact active breakpoint via `breakpointForWidth`
+/// - re-configures `ScreenUtilInit` whenever the device type changes so
+///   scaling and `designSize` always match the active breakpoint
 class ResponsiveInit extends StatefulWidget {
   const ResponsiveInit({
     super.key,
@@ -17,10 +19,18 @@ class ResponsiveInit extends StatefulWidget {
     required this.builder,
   });
 
-  /// Ordered list of breakpoint rules. Provide at least mobile, tablet, desktop.
+  /// Ordered list of breakpoint rules (will be sorted ascending by `width`).
+  ///
+  /// Provide at least mobile/tablet/desktop. The last rule commonly uses
+  /// `double.infinity` to cover all larger widths. Each rule may also
+  /// specify a `designSize` and whether auto scaling (`autoScale`) is enabled.
   final List<b.Breakpoints> breakpoints;
 
   /// App builder invoked inside `ScreenUtilInit`.
+  ///
+  /// This builder runs within a `ScreenUtilInit` configured for the currently
+  /// matched breakpoint. The widget is keyed by the active `DeviceType` to
+  /// force rebuilds when the device type changes.
   final Widget Function(BuildContext context, Widget? child) builder;
 
   @override
@@ -31,10 +41,7 @@ class _ResponsiveInitState extends State<ResponsiveInit> {
   @override
   void initState() {
     super.initState();
-    ResponsiveUtils.breakpoints.addAll({
-      for (final breakpoint in widget.breakpoints)
-        breakpoint.deviceType: breakpoint,
-    });
+    ResponsiveUtils.registerBreakpoints(widget.breakpoints);
   }
 
   @override
@@ -43,7 +50,8 @@ class _ResponsiveInitState extends State<ResponsiveInit> {
       builder: (context) {
         final size = MediaQuery.of(context).size;
         final deviceType = ResponsiveUtils.setDeviceType(size.width);
-        final breakpoint = ResponsiveUtils.breakpoints[deviceType];
+        // Use the exact active breakpoint to configure ScreenUtil parameters.
+        final breakpoint = ResponsiveUtils.breakpointForWidth(size.width);
 
         // Force ScreenUtilInit to rebuild when device type changes
         // This ensures scaling config updates properly
@@ -51,11 +59,12 @@ class _ResponsiveInitState extends State<ResponsiveInit> {
           key: ValueKey(
             deviceType,
           ), // 🔑 Key ensures rebuild on device type change
-          designSize: breakpoint?.designSize ?? const Size(375, 812),
+          designSize: breakpoint.designSize ?? const Size(375, 812),
           minTextAdapt: true,
           splitScreenMode: true,
-          enableScaleText: () => breakpoint?.autoScale ?? true,
-          enableScaleWH: () => breakpoint?.autoScale ?? true,
+          // Enable or disable ScreenUtil scaling from the active breakpoint.
+          enableScaleText: () => breakpoint.autoScale,
+          enableScaleWH: () => breakpoint.autoScale,
           builder: widget.builder,
         );
       },
