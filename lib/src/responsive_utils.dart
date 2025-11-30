@@ -117,24 +117,19 @@ class ResponsiveUtils {
   }
 
   /// True if [width] maps to [DeviceType.mobile].
-  static bool get isMobile =>
-      currentDeviceType == DeviceType.mobile;
+  static bool get isMobile => currentDeviceType == DeviceType.mobile;
 
   /// True if [width] maps to [DeviceType.mobileSmall].
-  static bool get isMobileSmall =>
-      currentDeviceType == DeviceType.mobileSmall;
+  static bool get isMobileSmall => currentDeviceType == DeviceType.mobileSmall;
 
   /// True if [width] maps to [DeviceType.tablet].
-  static bool get isTablet =>
-      currentDeviceType == DeviceType.tablet;
+  static bool get isTablet => currentDeviceType == DeviceType.tablet;
 
   /// True if [width] maps to [DeviceType.laptop].
-  static bool get isLaptop =>
-      currentDeviceType == DeviceType.laptop;
+  static bool get isLaptop => currentDeviceType == DeviceType.laptop;
 
   /// True if [width] maps to [DeviceType.desktop].
-  static bool get isDesktop =>
-      currentDeviceType == DeviceType.desktop;
+  static bool get isDesktop => currentDeviceType == DeviceType.desktop;
 
   /// True if [width] maps to [DeviceType.desktopLarge].
   static bool get isDesktopLarge =>
@@ -143,9 +138,9 @@ class ResponsiveUtils {
   /// Whether automatic scaling (via ScreenUtil) should be enabled for the
   /// current device type, as specified by the active [Breakpoints].
   static bool get isNeedScreenUtil {
-    if (_lastIndex < 0 || _lastIndex >= _orderedBreakpoints.length) return false;
+    if (_lastIndex < 0 || _lastIndex >= _orderedBreakpoints.length){
+      return false;
+    }
     return _orderedBreakpoints[_lastIndex].autoScale ? true : false;
   }
 }
-
-

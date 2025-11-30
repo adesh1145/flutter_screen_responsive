@@ -9,7 +9,7 @@ class RSizedBox extends SizedBox {
     super.height,
     super.width,
     super.child,
-  })  : _square = false;
+  }) : _square = false;
 
   const RSizedBox.vertical(
     double? height, {

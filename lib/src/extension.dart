@@ -2,8 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart' as su
-    hide SizeExtension, EdgeInsetsExtension, BorderRadiusExtension,
-        RadiusExtension, BoxConstraintsExtension;
+    hide
+        SizeExtension,
+        EdgeInsetsExtension,
+        BorderRadiusExtension,
+        RadiusExtension,
+        BoxConstraintsExtension;
 
 import 'responsive_utils.dart';
 
@@ -52,7 +56,6 @@ extension SizeExtension on num {
   ///[ScreenUtil.setSp]
   double get sp {
     final value = ResponsiveUtils.isNeedScreenUtil;
-    print("isNeedScreenUtil: $value");
     if (value) {
       return su.ScreenUtil().setSp(this);
     }
@@ -128,8 +131,6 @@ extension SizeExtension on num {
       ? su.ScreenUtil().setVerticalSpacingDiagonal(this)
       : SizedBox(height: toDouble());
 }
-
-
 
 extension EdgeInsetsExtension on EdgeInsets {
   /// Creates adapt insets using r [SizeExtension].
@@ -208,7 +209,7 @@ extension RadiusExtension on Radius {
 
 extension BoxConstraintsExtension on BoxConstraints {
   /// Creates adapt BoxConstraints using r [SizeExtension].
-  BoxConstraints get r => this.copyWith(
+  BoxConstraints get r => copyWith(
         maxHeight: maxHeight.r,
         maxWidth: maxWidth.r,
         minHeight: minHeight.r,
@@ -216,21 +217,21 @@ extension BoxConstraintsExtension on BoxConstraints {
       );
 
   /// Creates adapt BoxConstraints using h-w [SizeExtension].
-  BoxConstraints get hw => this.copyWith(
+  BoxConstraints get hw => copyWith(
         maxHeight: maxHeight.h,
         maxWidth: maxWidth.w,
         minHeight: minHeight.h,
         minWidth: minWidth.w,
       );
 
-  BoxConstraints get w => this.copyWith(
+  BoxConstraints get w => copyWith(
         maxHeight: maxHeight.w,
         maxWidth: maxWidth.w,
         minHeight: minHeight.w,
         minWidth: minWidth.w,
       );
 
-  BoxConstraints get h => this.copyWith(
+  BoxConstraints get h => copyWith(
         maxHeight: maxHeight.h,
         maxWidth: maxWidth.h,
         minHeight: minHeight.h,
