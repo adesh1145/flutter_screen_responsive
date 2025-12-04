@@ -1,12 +1,4 @@
-/// Device classification used to choose layouts and scaling.
-///
-/// Defaults provided by this package (you can map any widths to these):
-/// - `mobileSmall`: very small phones/narrow devices
-/// - `mobile`: phones
-/// - `tablet`: tablets/foldables
-/// - `laptop`: large portable screens
-/// - `desktop`: desktop/web windows
-/// - `desktopLarge`: ultra-wide/large desktop/TV
+/// mobileSmall < mobile < tabletSmall < tablet < desktop < desktopLarge
 enum DeviceType {
   /// Very small phones or constrained/narrow layouts.
   mobileSmall,
@@ -14,10 +6,15 @@ enum DeviceType {
   /// Typical phones.
   mobile,
 
+
+  /// Laptops or large portable screens.
+  tabletSmall,
+
   /// Tablets or foldables.
   tablet,
 
-  /// Laptops or large portable screens.
+
+  @Deprecated('Use [tablestSmall] instead')
   laptop,
 
   /// Desktop or large browser windows.

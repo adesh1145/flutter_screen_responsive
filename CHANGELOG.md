@@ -1,3 +1,10 @@
+## 0.0.6
+- Add `DeviceType.tabletSmall` and align enum order: `mobileSmall < mobile < tabletSmall < tablet < desktop < desktopLarge`.
+- Responsive: add builders `mobileSmall`, `tabletSmall`, `desktopLarge` and implement full switch-based fallbacks.
+- ResponsiveUtils:
+  - add `isTabletSmall` getter
+  - simplify `.value<T>()` to a switch with the same fallbacks as `Responsive`
+- README: update device types, examples, and add `.value<T>()` usage.
 ## 0.0.5
 - Resolved pub points issues (analysis clean, tightened docs/metadata).
 

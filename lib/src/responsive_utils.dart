@@ -125,7 +125,11 @@ class ResponsiveUtils {
   /// True if [width] maps to [DeviceType.tablet].
   static bool get isTablet => currentDeviceType == DeviceType.tablet;
 
+  /// True if [width] maps to [DeviceType.tabletSmall].
+  static bool get isTabletSmall => currentDeviceType == DeviceType.tabletSmall;
+
   /// True if [width] maps to [DeviceType.laptop].
+  @Deprecated('Use [tabletSmall] instead')
   static bool get isLaptop => currentDeviceType == DeviceType.laptop;
 
   /// True if [width] maps to [DeviceType.desktop].
@@ -142,5 +146,69 @@ class ResponsiveUtils {
       return false;
     }
     return _orderedBreakpoints[_lastIndex].autoScale ? true : false;
+  }
+   
+  /// Picks the value for the current [DeviceType], falling back in this order
+  /// when the preferred value is null: `desktopLarge → desktop → tablet →
+  /// tabletSmall → mobile → mobileSmall`.
+  ///
+  /// Provide at least one non-null argument; otherwise an assertion will fire
+  /// in debug mode. This mirrors the fallback logic used by [Responsive].
+  static T value<T>({
+    T? mobileSmall,
+    T? mobile,
+    T? tabletSmall,
+    T? tablet,
+    T? desktop,
+    T? desktopLarge,
+  }) {
+    assert(
+      mobileSmall != null ||
+          mobile != null ||
+          tabletSmall != null ||
+          tablet != null ||
+         
+          desktop != null ||
+          desktopLarge != null,
+      'Provide at least one value to ResponsiveUtils.value.',
+    );
+
+    switch (currentDeviceType) {
+      case DeviceType.desktopLarge:
+        return desktopLarge ??
+            desktop ??
+            tablet ??
+            tabletSmall ??
+            mobile ??
+            mobileSmall as T;
+      case DeviceType.desktop:
+        return desktop ??
+            tablet ??
+            tabletSmall ??
+            mobile ??
+            mobileSmall as T;
+      case DeviceType.tablet:
+        return tablet ??
+            tabletSmall ??
+            mobile ??
+            mobileSmall as T;
+      case DeviceType.tabletSmall:
+        return tabletSmall ??
+            mobile ??
+            mobileSmall as T;
+      case DeviceType.mobile:
+        return mobile ??
+            mobileSmall as T;
+      case DeviceType.mobileSmall:
+        return mobileSmall ??
+            mobile as T;
+      default:
+        return mobileSmall ??
+            mobile ??
+            tabletSmall ??
+            tablet ??
+            desktop ??
+            desktopLarge as T;
+    }
   }
 }

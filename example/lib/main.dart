@@ -26,21 +26,39 @@ class ResponsiveExampleApp extends StatelessWidget {
 
 const List<Breakpoints> _exampleBreakpoints = [
   Breakpoints(
-    width: 600,
+    width: 360, // <=360 -> mobileSmall
+    deviceType: DeviceType.mobileSmall,
+    designSize: Size(320, 568),
+    autoScale: true,
+  ),
+  Breakpoints(
+    width: 600, // 361..600 -> mobile
     deviceType: DeviceType.mobile,
     designSize: Size(375, 812),
     autoScale: true,
   ),
   Breakpoints(
-    width: 1024,
+    width: 900, // 601..900 -> tabletSmall
+    deviceType: DeviceType.tabletSmall,
+    designSize: Size(600, 960),
+    autoScale: true,
+  ),
+  Breakpoints(
+    width: 1200, // 901..1200 -> tablet
     deviceType: DeviceType.tablet,
     designSize: Size(834, 1194),
     autoScale: true,
   ),
   Breakpoints(
-    width: double.infinity,
+    width: 1600, // 1201..1600 -> desktop
     deviceType: DeviceType.desktop,
     designSize: Size(1440, 1024),
+    autoScale: false,
+  ),
+  Breakpoints(
+    width: double.infinity, // 1601+ -> desktopLarge
+    deviceType: DeviceType.desktopLarge,
+    designSize: Size(1920, 1080),
     autoScale: false,
   ),
 ];
@@ -56,9 +74,66 @@ class ResponsiveDashboard extends StatelessWidget {
         centerTitle: false,
       ),
       body: Responsive(
-        mobile: (constraints) => const _DashboardLayout(columns: 1),
-        tablet: (constraints) => const _DashboardLayout(columns: 2),
-        desktop: (constraints) => const _DashboardLayout(columns: 3),
+        mobileSmall: (constraints) => _DashboardLayout(
+          columns: ResponsiveUtils.value<int>(
+            mobileSmall: 1,
+            mobile: 1,
+            tabletSmall: 2,
+            tablet: 2,
+            desktop: 3,
+            desktopLarge: 4,
+          ),
+        ),
+        mobile: (constraints) => _DashboardLayout(
+          columns: ResponsiveUtils.value<int>(
+            mobileSmall: 1,
+            mobile: 1,
+            tabletSmall: 2,
+            tablet: 2,
+            desktop: 3,
+            desktopLarge: 4,
+          ),
+        ),
+        tabletSmall: (constraints) => _DashboardLayout(
+          columns: ResponsiveUtils.value<int>(
+            mobileSmall: 1,
+            mobile: 1,
+            tabletSmall: 2,
+            tablet: 2,
+            desktop: 3,
+            desktopLarge: 4,
+          ),
+        ),
+        tablet: (constraints) => _DashboardLayout(
+          columns: ResponsiveUtils.value<int>(
+            mobileSmall: 1,
+            mobile: 1,
+            tabletSmall: 2,
+            tablet: 3,
+            desktop: 3,
+            desktopLarge: 4,
+          ),
+        ),
+        desktop: (constraints) => _DashboardLayout(
+          columns: ResponsiveUtils.value<int>(
+            mobileSmall: 1,
+            mobile: 1,
+            tabletSmall: 2,
+            tablet: 3,
+            desktop: 4,
+            desktopLarge: 5,
+          ),
+        ),
+        desktopLarge: (constraints) => _DashboardLayout(
+          columns: ResponsiveUtils.value<int>(
+            mobileSmall: 1,
+            mobile: 1,
+            tabletSmall: 2,
+            tablet: 3,
+            desktop: 4,
+            desktopLarge: 6,
+          ),
+        ),
       ),
     );
   }

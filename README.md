@@ -25,7 +25,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  responsive: ^0.0.1
+  flutter_screen_responsive: ^0.0.3
 ```
 
 Minimum supported versions (because of `flutter_screenutil: ^5.9.3`):
@@ -51,7 +51,7 @@ flutter pub get
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:responsive/responsive.dart';
+import 'package:flutter_screen_responsive/flutter_screen_responsive.dart';
 
 void main() => runApp(const MyApp());
 
@@ -63,22 +63,40 @@ class MyApp extends StatelessWidget {
     return ResponsiveInit(
       breakpoints: const [
         Breakpoints(
-          width: 600, // up to 600 -> mobile
+          width: 360, // <=360 -> mobileSmall
+          deviceType: DeviceType.mobileSmall,
+          designSize: Size(320, 568),
+          autoScale: true,
+        ),
+        Breakpoints(
+          width: 600, // 361..600 -> mobile
           deviceType: DeviceType.mobile,
           designSize: Size(375, 812),
           autoScale: true,
         ),
         Breakpoints(
-          width: 1024, // 601..1024 -> tablet
+          width: 900, // 601..900 -> tabletSmall
+          deviceType: DeviceType.tabletSmall,
+          designSize: Size(600, 960),
+          autoScale: true,
+        ),
+        Breakpoints(
+          width: 1200, // 901..1200 -> tablet
           deviceType: DeviceType.tablet,
           designSize: Size(834, 1194),
           autoScale: true,
         ),
         Breakpoints(
-          width: double.infinity, // 1025+ -> desktop
+          width: 1600, // 1201..1600 -> desktop
           deviceType: DeviceType.desktop,
           designSize: Size(1440, 1024),
-          autoScale: false, // often prefer fixed pixels on desktop
+          autoScale: false,
+        ),
+        Breakpoints(
+          width: double.infinity, // 1601+ -> desktopLarge
+          deviceType: DeviceType.desktopLarge,
+          designSize: Size(1920, 1080),
+          autoScale: false,
         ),
       ],
       builder: (context, child) => MaterialApp(
@@ -104,13 +122,40 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Responsive(
+        mobileSmall: (_) => const _MobileSmallView(),
         mobile: (_) => const _MobileView(),
+        tabletSmall: (_) => const _TabletSmallView(),
         tablet: (_) => const _TabletView(),
         desktop: (_) => const _DesktopView(),
+        desktopLarge: (_) => const _DesktopLargeView(),
       ),
     );
   }
 }
+```
+
+### Pick values per device at runtime
+
+Use `ResponsiveUtils.value<T>()` to select configuration values with the same fallback order used by `Responsive` (desktopLarge → desktop → tablet → tabletSmall → mobile → mobileSmall):
+
+```dart
+final columns = ResponsiveUtils.value<int>(
+  desktopLarge: 5,
+  desktop: 4,
+  tablet: 3,
+  tabletSmall: 2,
+  mobile: 2,
+  mobileSmall: 1,
+);
+
+final padding = EdgeInsets.symmetric(
+  horizontal: ResponsiveUtils.value<double>(
+    desktop: 32,
+    tablet: 24,
+    mobile: 16,
+    mobileSmall: 12,
+  ),
+);
 ```
 
 ---
@@ -140,8 +185,13 @@ final title = 18.spMax; // never smaller than 18
 ## Utilities
 
 ```dart
-final device = ResponsiveUtils.getDeviceType; // DeviceType.mobile/tablet/desktop
-final isTab = ResponsiveUtils.isTablet(MediaQuery.of(context).size.width);
+final device = ResponsiveUtils.getDeviceType; // DeviceType.*
+final isMobileSmall = ResponsiveUtils.isMobileSmall;
+final isMobile = ResponsiveUtils.isMobile;
+final isTabletSmall = ResponsiveUtils.isTabletSmall;
+final isTablet = ResponsiveUtils.isTablet;
+final isDesktop = ResponsiveUtils.isDesktop;
+final isDesktopLarge = ResponsiveUtils.isDesktopLarge;
 final shouldScale = ResponsiveUtils.isNeedScreenUtil; // from active breakpoint
 ```
 
@@ -150,11 +200,12 @@ final shouldScale = ResponsiveUtils.isNeedScreenUtil; // from active breakpoint
 ## API overview
 
 - `Breakpoints` – describes width threshold, `DeviceType`, optional `designSize`, and `autoScale`.
-- `DeviceType` – enum of `mobile`, `tablet`, `desktop`.
+- `DeviceType` – defaults include `mobileSmall`, `mobile`, `tabletSmall`, `tablet`, `desktop`, `desktopLarge`.
 - `ResponsiveInit` – registers breakpoints and configures ScreenUtil; rebuilds when device type changes.
-- `Responsive` – picks the proper builder (`mobile`/`tablet`/`desktop`) for the current width.
-- `ResponsiveUtils` – helpers to read/compute active device type and decide if scaling is needed.
+- `Responsive` – picks the proper builder for the current width (supports all device types above).
+- `ResponsiveUtils` – helpers to read/compute active device type, `.value<T>()` to pick values by device, and `isNeedScreenUtil`.
 - `SizeExtension` – `.w`, `.h`, `.r`, `.sp`, `.spMin`, `.spMax`, and spacing getters.
+- Widgets: `RPadding`, `RSizedBox`.
 
 ---
 

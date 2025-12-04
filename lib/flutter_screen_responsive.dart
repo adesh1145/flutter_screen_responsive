@@ -14,3 +14,5 @@ export 'src/responsive_utils.dart';
 export 'src/init.dart';
 export 'src/extension.dart';
 export 'src/responsive_widget.dart';
+export 'src/r_padding.dart';
+export 'src/r_sizedbox.dart';
