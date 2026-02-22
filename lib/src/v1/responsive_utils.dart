@@ -6,6 +6,8 @@ import 'device_type.dart';
 ///
 /// Populated by `ResponsiveInit`, these helpers are used by widgets and
 /// extensions to decide when and how to scale UI.
+@Deprecated('Use ResponsiveScope from v2 API (flutter_screen_responsive.dart). '
+    'v1 will be removed in a future major release.')
 class ResponsiveUtils {
   /// Registry of breakpoint rules by [DeviceType].
   static final Map<DeviceType, Breakpoints> breakpoints = {};

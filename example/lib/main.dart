@@ -3,7 +3,14 @@ import 'package:flutter_screen_responsive/flutter_screen_responsive.dart';
 
 void main() => runApp(const ResponsiveExampleApp());
 
-/// Demo application showcasing the core APIs from the `responsive` package.
+/// Demo application showcasing the v2 InheritedWidget-based responsive API.
+///
+/// Features demonstrated:
+/// - `ResponsiveInit` for root breakpoint setup
+/// - `context.responsive` for device type queries
+/// - `scope.value()` for per-device value resolution
+/// - `ResponsiveScope.overrideBreakpoints()` for local overrides
+/// - `.w`, `.h`, `.sp`, spacing extensions
 class ResponsiveExampleApp extends StatelessWidget {
   const ResponsiveExampleApp({super.key});
 
@@ -23,6 +30,10 @@ class ResponsiveExampleApp extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Breakpoint configuration
+// ─────────────────────────────────────────────────────────────────────────
 
 const List<Breakpoints> _exampleBreakpoints = [
   Breakpoints(
@@ -63,76 +74,44 @@ const List<Breakpoints> _exampleBreakpoints = [
   ),
 ];
 
+// ─────────────────────────────────────────────────────────────────────────
+// Main dashboard — uses global breakpoints
+// ─────────────────────────────────────────────────────────────────────────
+
 class ResponsiveDashboard extends StatelessWidget {
   const ResponsiveDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final scope = context.responsive;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Responsive Dashboard'),
         centerTitle: false,
+        actions: [
+          // Navigate to a screen that overrides breakpoints locally
+          TextButton.icon(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const OverrideExampleScreen()),
+            ),
+            icon: const Icon(Icons.tune, color: Colors.white),
+            label: const Text(
+              'Override Demo',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
       ),
-      body: Responsive(
-        mobileSmall: (constraints) => _DashboardLayout(
-          columns: ResponsiveUtils.value<int>(
-            mobileSmall: 1,
-            mobile: 1,
-            tabletSmall: 2,
-            tablet: 2,
-            desktop: 3,
-            desktopLarge: 4,
-          ),
-        ),
-        mobile: (constraints) => _DashboardLayout(
-          columns: ResponsiveUtils.value<int>(
-            mobileSmall: 1,
-            mobile: 1,
-            tabletSmall: 2,
-            tablet: 2,
-            desktop: 3,
-            desktopLarge: 4,
-          ),
-        ),
-        tabletSmall: (constraints) => _DashboardLayout(
-          columns: ResponsiveUtils.value<int>(
-            mobileSmall: 1,
-            mobile: 1,
-            tabletSmall: 2,
-            tablet: 2,
-            desktop: 3,
-            desktopLarge: 4,
-          ),
-        ),
-        tablet: (constraints) => _DashboardLayout(
-          columns: ResponsiveUtils.value<int>(
-            mobileSmall: 1,
-            mobile: 1,
-            tabletSmall: 2,
-            tablet: 3,
-            desktop: 3,
-            desktopLarge: 4,
-          ),
-        ),
-        desktop: (constraints) => _DashboardLayout(
-          columns: ResponsiveUtils.value<int>(
-            mobileSmall: 1,
-            mobile: 1,
-            tabletSmall: 2,
-            tablet: 3,
-            desktop: 4,
-            desktopLarge: 5,
-          ),
-        ),
-        desktopLarge: (constraints) => _DashboardLayout(
-          columns: ResponsiveUtils.value<int>(
-            mobileSmall: 1,
-            mobile: 1,
-            tabletSmall: 2,
-            tablet: 3,
-            desktop: 4,
-            desktopLarge: 6,
-          ),
+      body: _DashboardLayout(
+        columns: scope.value(
+          mobileSmall: () => 1,
+          mobile: () => 1,
+          tabletSmall: () => 2,
+          tablet: () => 3,
+          desktop: () => 4,
+          desktopLarge: () => 6,
         ),
       ),
     );
@@ -146,8 +125,7 @@ class _DashboardLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final deviceType = ResponsiveUtils.getDeviceType;
-    final shouldScale = ResponsiveUtils.isNeedScreenUtil;
+    final scope = context.responsive;
 
     return Center(
       child: ConstrainedBox(
@@ -158,7 +136,7 @@ class _DashboardLayout extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Viewing on ${deviceType.name.toUpperCase()}',
+                'Viewing on ${scope.currentDeviceType.name.toUpperCase()}',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontSize: 26.sp,
                       fontWeight: FontWeight.bold,
@@ -166,7 +144,8 @@ class _DashboardLayout extends StatelessWidget {
               ),
               12.h.verticalSpace,
               Text(
-                'Auto scaling enabled: $shouldScale',
+                'Screen: ${scope.screenSize.width.toInt()} × '
+                '${scope.screenSize.height.toInt()}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontSize: 16.sp,
                     ),
@@ -178,7 +157,10 @@ class _DashboardLayout extends StatelessWidget {
                     crossAxisCount: columns,
                     crossAxisSpacing: 16.w,
                     mainAxisSpacing: 16.h,
-                    childAspectRatio: shouldScale ? 1.2 : 1.4,
+                    childAspectRatio: scope.value(
+                      mobile: () => 1.2,
+                      desktop: () => 1.4,
+                    ),
                   ),
                   itemCount: _cards.length,
                   itemBuilder: (context, index) =>
@@ -192,6 +174,79 @@ class _DashboardLayout extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Override example — demonstrates ResponsiveScope.overrideBreakpoints()
+// ─────────────────────────────────────────────────────────────────────────
+
+/// This screen wraps its content with [ResponsiveScope.overrideBreakpoints],
+/// using different breakpoints than the root. This shows the CSS-like
+/// override feature.
+class OverrideExampleScreen extends StatelessWidget {
+  const OverrideExampleScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Local Override Demo')),
+      body: ResponsiveScope.overrideBreakpoints(
+        breakpoints: const [
+          // Use only 2 breakpoints: mobile + desktop
+          // Mobile up to 800px, desktop for everything larger
+          Breakpoints(
+            width: 800,
+            deviceType: DeviceType.mobile,
+            designSize: Size(375, 812),
+            autoScale: true,
+          ),
+          Breakpoints(
+            width: double.infinity,
+            deviceType: DeviceType.desktop,
+            designSize: Size(1440, 900),
+            autoScale: false,
+          ),
+        ],
+        child: Builder(
+          builder: (context) {
+            final scope = context.responsive;
+            return Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      scope.isMobile ? Icons.phone_android : Icons.desktop_mac,
+                      size: 64.sp,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    24.h.verticalSpace,
+                    Text(
+                      'Local device type: ${scope.currentDeviceType.name}',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    12.h.verticalSpace,
+                    Text(
+                      'This screen uses DIFFERENT breakpoints.\n'
+                      'Mobile ≤ 800px, Desktop > 800px.\n'
+                      'The parent dashboard uses 6 breakpoints.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Dashboard card widget
+// ─────────────────────────────────────────────────────────────────────────
 
 class _DashboardCard extends StatelessWidget {
   const _DashboardCard(this.card);
@@ -239,6 +294,10 @@ class _DashboardCard extends StatelessWidget {
     );
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Data
+// ─────────────────────────────────────────────────────────────────────────
 
 class _InfoCard {
   const _InfoCard({

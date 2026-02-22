@@ -1,4 +1,7 @@
 /// mobileSmall < mobile < tabletSmall < tablet < desktop < desktopLarge
+///
+/// Device type classification for responsive breakpoints.
+/// Used by [ResponsiveScope] to determine which layout/scaling to apply.
 enum DeviceType {
   /// Very small phones or constrained/narrow layouts.
   mobileSmall,
@@ -6,15 +9,13 @@ enum DeviceType {
   /// Typical phones.
   mobile,
 
-
   /// Laptops or large portable screens.
   tabletSmall,
 
   /// Tablets or foldables.
   tablet,
 
-
-  @Deprecated('Use [tablestSmall] instead')
+  @Deprecated('Use [tabletSmall] instead')
   laptop,
 
   /// Desktop or large browser windows.

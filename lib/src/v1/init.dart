@@ -12,6 +12,8 @@ import 'breakpoints.dart' as b;
 /// - looks up the exact active breakpoint via `breakpointForWidth`
 /// - re-configures `ScreenUtilInit` whenever the device type changes so
 ///   scaling and `designSize` always match the active breakpoint
+@Deprecated('Use ResponsiveInit from v2 API (flutter_screen_responsive.dart). '
+    'v1 will be removed in a future major release.')
 class ResponsiveInit extends StatefulWidget {
   const ResponsiveInit({
     super.key,

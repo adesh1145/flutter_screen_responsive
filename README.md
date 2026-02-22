@@ -1,21 +1,20 @@
-## flutter_screen_responsive
+# flutter_screen_responsive
 
-Build truly responsive Flutter UIs with configurable breakpoints and ScreenUtil-powered scaling. This package lets you:
+Build truly responsive Flutter UIs with configurable breakpoints, **InheritedWidget-based scope**, and ScreenUtil-powered scaling. This package lets you:
 
-- declare dedicated layouts for mobile, tablet, and desktop
-- centralize breakpoint rules and design sizes
+- define breakpoints for mobile, tablet, desktop (and more)
+- **override breakpoints locally** in any subtree — like CSS `@media` overrides
 - automatically (re)configure ScreenUtil when device type changes
-- use ergonomic sizing and spacing extensions like `16.w`, `14.sp`, `8.h.verticalSpace`
+- use ergonomic sizing/spacing extensions like `16.w`, `14.sp`, `8.h.verticalSpace`
+- access the current scope via `context.responsive`
 
 ---
 
-## Features
+## What's new in v1.0.0
 
-- Breakpoint-aware layout builder via `Responsive` (mobile/tablet/desktop builders)
-- Top-level initializer `ResponsiveInit` that registers your `Breakpoints` and wires up `flutter_screenutil`
-- Automatic ScreenUtil re-init when device type changes (keeps scaling accurate)
-- Rich sizing/spacing extensions on `num`: `.w`, `.h`, `.sp`, `.spMin`, `.spMax`, `.verticalSpace`, `.horizontalSpace`, etc.
-- Utilities to check the active device type (`ResponsiveUtils`)
+> **Breaking:** The entire API has been rebuilt on `InheritedWidget` (`ResponsiveScope`). The old v1 API (`ResponsiveUtils`, `Responsive` widget) is moved to a separate legacy import and marked `@Deprecated`. See [Migration from v0.x](#migration-from-v0x).
+
+**Key improvement:** You can now **override breakpoints, scaling, and design sizes for specific screens or subtrees** — something impossible with the old global-state approach.
 
 ---
 
@@ -25,18 +24,8 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_screen_responsive: ^0.0.3
+  flutter_screen_responsive: ^1.0.0
 ```
-
-Minimum supported versions (because of `flutter_screenutil: ^5.9.3`):
-
-```yaml
-environment:
-  sdk: ">=2.17.0 <4.0.0"
-  flutter: ">=3.10.0"
-```
-
-Run:
 
 ```bash
 flutter pub get
@@ -46,8 +35,7 @@ flutter pub get
 
 ## Getting started
 
-1. Define your breakpoints (width threshold, device type, design size, and whether to auto-scale).
-2. Wrap your app with `ResponsiveInit` so ScreenUtil and breakpoints are available everywhere.
+### 1. Define breakpoints & wrap your app
 
 ```dart
 import 'package:flutter/material.dart';
@@ -63,44 +51,40 @@ class MyApp extends StatelessWidget {
     return ResponsiveInit(
       breakpoints: const [
         Breakpoints(
-          width: 360, // <=360 -> mobileSmall
+          width: 360,
           deviceType: DeviceType.mobileSmall,
           designSize: Size(320, 568),
-          autoScale: true,
         ),
         Breakpoints(
-          width: 600, // 361..600 -> mobile
+          width: 600,
           deviceType: DeviceType.mobile,
           designSize: Size(375, 812),
-          autoScale: true,
         ),
         Breakpoints(
-          width: 900, // 601..900 -> tabletSmall
+          width: 900,
           deviceType: DeviceType.tabletSmall,
           designSize: Size(600, 960),
-          autoScale: true,
         ),
         Breakpoints(
-          width: 1200, // 901..1200 -> tablet
+          width: 1200,
           deviceType: DeviceType.tablet,
           designSize: Size(834, 1194),
-          autoScale: true,
         ),
         Breakpoints(
-          width: 1600, // 1201..1600 -> desktop
+          width: 1600,
           deviceType: DeviceType.desktop,
           designSize: Size(1440, 1024),
           autoScale: false,
         ),
         Breakpoints(
-          width: double.infinity, // 1601+ -> desktopLarge
+          width: double.infinity,
           deviceType: DeviceType.desktopLarge,
           designSize: Size(1920, 1080),
           autoScale: false,
         ),
       ],
       builder: (context, child) => MaterialApp(
-        title: 'Responsive Demo',
+        title: 'My App',
         home: const HomePage(),
       ),
     );
@@ -108,11 +92,7 @@ class MyApp extends StatelessWidget {
 }
 ```
 
----
-
-## Usage: choose layout per device
-
-Render different trees for each device type with the `Responsive` widget.
+### 2. Use `context.responsive` anywhere
 
 ```dart
 class HomePage extends StatelessWidget {
@@ -120,103 +100,158 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scope = context.responsive;
+
     return Scaffold(
-      body: Responsive(
-        mobileSmall: (_) => const _MobileSmallView(),
-        mobile: (_) => const _MobileView(),
-        tabletSmall: (_) => const _TabletSmallView(),
-        tablet: (_) => const _TabletView(),
-        desktop: (_) => const _DesktopView(),
-        desktopLarge: (_) => const _DesktopLargeView(),
+      body: Padding(
+        padding: EdgeInsets.all(scope.value(
+          mobile: () => 16.0,
+          tablet: () => 24.0,
+          desktop: () => 32.0,
+        )),
+        child: Text(
+          'Device: ${scope.currentDeviceType.name}',
+          style: TextStyle(fontSize: 18.sp),
+        ),
       ),
     );
   }
 }
 ```
 
-### Pick values per device at runtime
+---
 
-Use `ResponsiveUtils.value<T>()` to select configuration values with the same fallback order used by `Responsive` (desktopLarge → desktop → tablet → tabletSmall → mobile → mobileSmall):
+## Local breakpoint overrides (CSS-like)
+
+The **killer feature** — override breakpoints for a specific subtree:
 
 ```dart
-final columns = ResponsiveUtils.value<int>(
-  desktopLarge: 5,
-  desktop: 4,
-  tablet: 3,
-  tabletSmall: 2,
-  mobile: 2,
-  mobileSmall: 1,
-);
+// Root defines default breakpoints via ResponsiveInit.
+// A specific screen can override them:
+ResponsiveScope.overrideBreakpoints(
+  breakpoints: [
+    Breakpoints(
+      width: 600,
+      deviceType: DeviceType.mobile,
+      designSize: Size(375, 812),
+      autoScale: true,
+    ),
+    Breakpoints(
+      width: double.infinity,
+      deviceType: DeviceType.desktop,
+      designSize: Size(1440, 900),
+      autoScale: false,
+    ),
+  ],
+  child: MySpecificScreen(),
+)
+```
 
-final padding = EdgeInsets.symmetric(
-  horizontal: ResponsiveUtils.value<double>(
-    desktop: 32,
-    tablet: 24,
-    mobile: 16,
-    mobileSmall: 12,
-  ),
+Inside `MySpecificScreen`, `context.responsive` uses the **local** breakpoints — not the global ones. `.w`, `.h`, `.sp` extensions automatically use the local `ScreenUtil` config. This is similar to how CSS works — define defaults at root, override at any level.
+
+---
+
+## Pick values per device
+
+Use the lazy `scope.value<T>()` resolver — only the matched device type's builder runs:
+
+```dart
+final columns = context.responsive.value(
+  mobileSmall: () => 1,
+  mobile: () => 2,
+  tabletSmall: () => 2,
+  tablet: () => 3,
+  desktop: () => 4,
+  desktopLarge: () => 6,
 );
+```
+
+Fallback order: `desktopLarge → desktop → tablet → tabletSmall → mobile → mobileSmall`. You only need to provide the values that differ.
+
+---
+
+## Device type checks
+
+```dart
+final scope = context.responsive;
+
+if (scope.isMobile) { ... }
+if (scope.isTablet) { ... }
+if (scope.isDesktop) { ... }
+if (scope.isMobileSmall) { ... }
+if (scope.isTabletSmall) { ... }
+if (scope.isDesktopLarge) { ... }
+
+// Access directly
+scope.currentDeviceType  // DeviceType.mobile, etc.
+scope.screenSize         // Size from MediaQuery
 ```
 
 ---
 
-## Sizing & spacing helpers (extensions)
-
-Use the `SizeExtension` methods on `num` to scale values safely. Scaling only applies when the active breakpoint’s `autoScale` is true.
+## Sizing & spacing extensions
 
 ```dart
-// Sizes
-final w = 16.w;   // width based on ScreenUtil
-final h = 24.h;   // height based on ScreenUtil
-final r = 12.r;   // radius
-final sp = 14.sp; // font size
+// Sizes (scaled by ScreenUtil based on active breakpoint)
+final w = 16.w;    // width
+final h = 24.h;    // height
+final r = 12.r;    // radius
+final sp = 14.sp;  // font size
 
-// Minimum / Maximum font sizes
-final label = 12.spMin; // never larger than 12
-final title = 18.spMax; // never smaller than 18
+// Clamped font sizes
+final label = 12.spMin;  // never larger than 12
+final title = 18.spMax;  // never smaller than 18
 
 // Spacers
-16.h.verticalSpace;   // SizedBox(height: ...)
-24.w.horizontalSpace; // SizedBox(width: ...)
-```
+16.h.verticalSpace;    // SizedBox(height: ...)
+24.w.horizontalSpace;  // SizedBox(width: ...)
 
----
-
-## Utilities
-
-```dart
-final device = ResponsiveUtils.getDeviceType; // DeviceType.*
-final isMobileSmall = ResponsiveUtils.isMobileSmall;
-final isMobile = ResponsiveUtils.isMobile;
-final isTabletSmall = ResponsiveUtils.isTabletSmall;
-final isTablet = ResponsiveUtils.isTablet;
-final isDesktop = ResponsiveUtils.isDesktop;
-final isDesktopLarge = ResponsiveUtils.isDesktopLarge;
-final shouldScale = ResponsiveUtils.isNeedScreenUtil; // from active breakpoint
+// Screen fractions
+0.5.sw  // 50% of screen width
+0.3.sh  // 30% of screen height
 ```
 
 ---
 
 ## API overview
 
-- `Breakpoints` – describes width threshold, `DeviceType`, optional `designSize`, and `autoScale`.
-- `DeviceType` – defaults include `mobileSmall`, `mobile`, `tabletSmall`, `tablet`, `desktop`, `desktopLarge`.
-- `ResponsiveInit` – registers breakpoints and configures ScreenUtil; rebuilds when device type changes.
-- `Responsive` – picks the proper builder for the current width (supports all device types above).
-- `ResponsiveUtils` – helpers to read/compute active device type, `.value<T>()` to pick values by device, and `isNeedScreenUtil`.
-- `SizeExtension` – `.w`, `.h`, `.r`, `.sp`, `.spMin`, `.spMax`, and spacing getters.
-- Widgets: `RPadding`, `RSizedBox`.
+| Class / Extension | Description |
+|---|---|
+| `ResponsiveInit` | Top-level widget — configures breakpoints + ScreenUtil + ResponsiveScope |
+| `ResponsiveScope` | InheritedWidget carrying device type & screen size; supports `.overrideBreakpoints()` |
+| `Breakpoints` | Width threshold + DeviceType + optional designSize + autoScale flag |
+| `DeviceType` | Enum: `mobileSmall`, `mobile`, `tabletSmall`, `tablet`, `desktop`, `desktopLarge` |
+| `ResponsiveBreakpointConfig` | Breakpoint map with `resolveDeviceType(width)` resolver |
+| `SizeExtension` | `.w`, `.h`, `.r`, `.sp`, `.spMin`, `.spMax`, spacing getters on `num` |
+| `ResponsiveScopeExtension` | `context.responsive` accessor |
+
+---
+
+## Migration from v0.x
+
+| v0.x (deprecated) | v1.0 (new) |
+|---|---|
+| `ResponsiveUtils.isMobile` | `context.responsive.isMobile` |
+| `ResponsiveUtils.value<T>(mobile: x)` | `context.responsive.value(mobile: () => x)` |
+| `ResponsiveUtils.getDeviceType` | `context.responsive.currentDeviceType` |
+| `Responsive(mobile: (c) => ...)` | `context.responsive.value(mobile: () => ...)` |
+
+The deprecated v1 API is still available via:
+
+```dart
+import 'package:flutter_screen_responsive/flutter_screen_responsive_legacy.dart';
+```
 
 ---
 
 ## Notes
 
 - Depends on `flutter_screenutil: ^5.9.3` (min Dart 2.17, Flutter 3.10).
-- Put `ResponsiveInit` above your `MaterialApp`/`CupertinoApp` so ScreenUtil and MediaQuery are available.
-- Provide breakpoints for all three device types to avoid nulls.
+- Place `ResponsiveInit` above your `MaterialApp`/`CupertinoApp`.
+- Provide breakpoints sorted by ascending width; the last one typically uses `double.infinity`.
 
 ---
 
 ## License & contributing
 
-MIT-style license (see `LICENSE`). PRs and issues are welcome.
+MIT license (see `LICENSE`). PRs and issues are welcome.

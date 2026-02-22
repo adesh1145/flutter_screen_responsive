@@ -9,6 +9,8 @@ import 'device_type.dart';
 /// calls one of the provided builders. Fallback order when a builder is null:
 /// `mobile -> tablet -> desktop`.
 
+@Deprecated('Use ResponsiveScope.value() from v2 API instead. '
+    'v1 will be removed in a future major release.')
 class Responsive extends StatelessWidget {
   /// Builder for small screens (phones).
   final Widget Function(BoxConstraints constraints)? mobileSmall;
